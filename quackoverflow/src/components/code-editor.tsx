@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Play, Copy, RotateCcw } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Play, Copy, RotateCcw } from "lucide-react";
 
 const defaultCode = `// Your code here
 function fibonacci(n) {
@@ -10,53 +10,85 @@ function fibonacci(n) {
   return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-console.log(fibonacci(10));`
+console.log(fibonacci(10));`;
 
-export function CodeEditor() {
-  const [code, setCode] = useState(defaultCode)
-  const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set())
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStartLine, setDragStartLine] = useState<number | null>(null)
-  const editorRef = useRef<HTMLDivElement>(null)
+export const CodeEditor: React.FC = () => {
+  const [code, setCode] = useState(defaultCode);
+  const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartLine, setDragStartLine] = useState<number | null>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
 
-  const lines = code.split("\n")
+  const lines = code.split("\n");
 
   useEffect(() => {
     const handleMouseUp = () => {
-      setIsDragging(false)
-      setDragStartLine(null)
-    }
+      setIsDragging(false);
+      setDragStartLine(null);
+    };
 
-    window.addEventListener("mouseup", handleMouseUp)
-    return () => window.removeEventListener("mouseup", handleMouseUp)
-  }, [])
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => window.removeEventListener("mouseup", handleMouseUp);
+  }, []);
 
   const handleDuckClick = (lineIndex: number) => {
-    setSelectedLines(new Set([lineIndex]))
-    setDragStartLine(lineIndex)
-    setIsDragging(true)
-  }
+    if (selectedLines.has(lineIndex)) {
+      setSelectedLines(
+        new Set(Array.from(selectedLines).filter((i) => i !== lineIndex))
+      );
+      return;
+    }
+    setSelectedLines(new Set(Array.from(selectedLines).concat(lineIndex)));
+    setDragStartLine(lineIndex);
+    setIsDragging(true);
+  };
 
   const handleDuckEnter = (lineIndex: number) => {
     if (isDragging && dragStartLine !== null) {
-      const start = Math.min(dragStartLine, lineIndex)
-      const end = Math.max(dragStartLine, lineIndex)
-      const newSelection = new Set<number>()
+      const start = Math.min(dragStartLine, lineIndex);
+      const end = Math.max(dragStartLine, lineIndex);
+      const newSelection = new Set<number>();
       for (let i = start; i <= end; i++) {
-        newSelection.add(i)
+        newSelection.add(i);
       }
-      setSelectedLines(newSelection)
+      setSelectedLines(newSelection);
     }
-  }
+  };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(code)
-  }
+    navigator.clipboard.writeText(code);
+  };
 
   const handleReset = () => {
-    setCode(defaultCode)
-    setSelectedLines(new Set())
-  }
+    setCode(defaultCode);
+    setSelectedLines(new Set());
+  };
+
+  const handleNewLine = (index: number) => {
+    const newLines = [...lines];
+    newLines.splice(index + 1, 0, "");
+    setCode(newLines.join("\n"));
+    // Focus next line
+    setTimeout(() => {
+      const nextInput = editorRef.current?.querySelectorAll("input")[
+        index + 1
+      ] as HTMLInputElement;
+      nextInput?.focus();
+    }, 0);
+  };
+
+  const handleRemoveLine = (index: number) => {
+    const newLines = lines.filter((_, i) => i !== index);
+    setCode(newLines.join("\n"));
+    // Focus previous line
+    setTimeout(() => {
+      const prevInput = editorRef.current?.querySelectorAll("input")[
+        Math.max(0, index - 1)
+      ] as HTMLInputElement;
+      prevInput?.focus();
+    }, 0);
+    setSelectedLines(new Set());
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -66,8 +98,10 @@ export function CodeEditor() {
           <h2 className="text-lg font-semibold text-foreground">Code Editor</h2>
           <p className="text-sm text-muted-foreground">
             {selectedLines.size > 0
-              ? `${selectedLines.size} line${selectedLines.size > 1 ? "s" : ""} selected`
-              : "Write or paste your code to discuss"}
+              ? `${selectedLines.size} line${
+                  selectedLines.size > 1 ? "s" : ""
+                } selected`
+              : "Write or paste your code to debug"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -78,10 +112,6 @@ export function CodeEditor() {
           <Button variant="outline" size="sm" onClick={handleReset}>
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset
-          </Button>
-          <Button size="sm">
-            <Play className="w-4 h-4 mr-2" />
-            Run
           </Button>
         </div>
       </div>
@@ -103,7 +133,9 @@ export function CodeEditor() {
               >
                 <span
                   className={`text-lg transition-all ${
-                    selectedLines.has(index) ? "scale-125 opacity-100" : "opacity-40 group-hover:opacity-70"
+                    selectedLines.has(index)
+                      ? "scale-125 opacity-100"
+                      : "opacity-40 group-hover:opacity-70"
                   }`}
                 >
                   🦆
@@ -121,32 +153,21 @@ export function CodeEditor() {
                   type="text"
                   value={line}
                   onChange={(e) => {
-                    const newLines = [...lines]
-                    newLines[index] = e.target.value
-                    setCode(newLines.join("\n"))
+                    const newLines = [...lines];
+                    newLines[index] = e.target.value;
+                    setCode(newLines.join("\n"));
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      e.preventDefault()
-                      const newLines = [...lines]
-                      newLines.splice(index + 1, 0, "")
-                      setCode(newLines.join("\n"))
-                      // Focus next line
-                      setTimeout(() => {
-                        const nextInput = editorRef.current?.querySelectorAll("input")[index + 1] as HTMLInputElement
-                        nextInput?.focus()
-                      }, 0)
-                    } else if (e.key === "Backspace" && line === "" && lines.length > 1) {
-                      e.preventDefault()
-                      const newLines = lines.filter((_, i) => i !== index)
-                      setCode(newLines.join("\n"))
-                      // Focus previous line
-                      setTimeout(() => {
-                        const prevInput = editorRef.current?.querySelectorAll("input")[
-                          Math.max(0, index - 1)
-                        ] as HTMLInputElement
-                        prevInput?.focus()
-                      }, 0)
+                      e.preventDefault();
+                      handleNewLine(index);
+                    } else if (
+                      e.key === "Backspace" &&
+                      line === "" &&
+                      lines.length > 1
+                    ) {
+                      e.preventDefault();
+                      handleRemoveLine(index);
                     }
                   }}
                   className="w-full bg-transparent text-foreground font-mono text-sm focus:outline-none"
@@ -179,5 +200,5 @@ export function CodeEditor() {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
