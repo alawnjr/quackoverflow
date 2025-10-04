@@ -1,18 +1,18 @@
 import Image from "next/image";
 import Script from "next/script";
+import analyzeCodeWithGemini from "./api/getGeminiFeedback";
 
-// Type declaration for ElevenLabs custom element
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'elevenlabs-convai': {
-        'agent-id': string;
-      };
-    }
+export default async function Home() {
+  // Hardcoded test input: a tiny JS snippet with an intentional error
+  const testCode = `function add(a, b) {\n  return a + b;\n}\n\nconsole.log(add(1)); // missing second argument\n`;
+
+  try {
+    const result = await analyzeCodeWithGemini(testCode);
+    console.log("Gemini analysis result:", JSON.stringify(result, null, 2));
+  } catch (e) {
+    console.error("Error calling Gemini helper:", e);
   }
-}
 
-export default function Home() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <Script 
