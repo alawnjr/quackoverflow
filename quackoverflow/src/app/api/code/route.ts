@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+
+  const problem = "Return the number of times that the string \"hi\" appears anywhere in the given string.";
+
   const javaCode = `public int countHi(String str) {
   
   int count = 0;
@@ -16,5 +19,5 @@ export async function GET() {
   return count;
 }`;
 
-  return NextResponse.json({ code: javaCode });
+  return NextResponse.json({ code: javaCode, problem: problem });
 }
