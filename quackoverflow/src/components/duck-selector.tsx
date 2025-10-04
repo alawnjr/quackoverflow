@@ -1,74 +1,58 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ActiveDuck } from "@/components/active-duck"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { ActiveDuck } from "@/components/active-duck";
+import { cn } from "@/lib/utils";
 
 export interface DuckPersonality {
-  id: string
-  name: string
-  emoji: string
-  description: string
-  color: string
+  id: string;
+  name: string;
+  emoji: string;
+  description: string;
+  color: string;
 }
 
 const duckPersonalities: DuckPersonality[] = [
   {
-    id: "mentor",
-    name: "Mentor Duck",
+    id: "rubberduck",
+    name: "Rubber Duck",
     emoji: "🦆",
-    description: "Patient and encouraging, guides you through problems step by step",
+    description:
+      "Patient and encouraging, guides you through problems step by step",
     color: "from-blue-500/20 to-cyan-500/20",
   },
   {
-    id: "socratic",
-    name: "Socratic Duck",
-    emoji: "🧐",
-    description: "Asks thought-provoking questions to help you find your own answers",
+    id: "angryduck",
+    name: "Angry Duck",
+    emoji: "🤬",
+    description: "Gets angry when you make mistakes",
     color: "from-purple-500/20 to-pink-500/20",
   },
-  {
-    id: "cheerleader",
-    name: "Cheerleader Duck",
-    emoji: "🎉",
-    description: "Enthusiastic and supportive, celebrates every small win",
-    color: "from-yellow-500/20 to-orange-500/20",
-  },
-  {
-    id: "debugger",
-    name: "Debugger Duck",
-    emoji: "🔍",
-    description: "Methodical and analytical, helps you trace bugs systematically",
-    color: "from-green-500/20 to-teal-500/20",
-  },
-  {
-    id: "zen",
-    name: "Zen Duck",
-    emoji: "🧘",
-    description: "Calm and philosophical, helps you step back and see the bigger picture",
-    color: "from-indigo-500/20 to-blue-500/20",
-  },
-]
+];
 
 export function DuckSelector() {
-  const [activeDuck, setActiveDuck] = useState<DuckPersonality>(duckPersonalities[0])
+  const [activeDuck, setActiveDuck] = useState<DuckPersonality>(
+    duckPersonalities[0]
+  );
 
   return (
     <div className="flex flex-col h-full">
       {/* Duck Profile Circles at Top */}
       <div className="p-4 border-b border-border">
-        <h1 className="text-sm font-semibold text-muted-foreground mb-3">Select Your Duck</h1>
+        <h1 className="text-sm font-semibold text-muted-foreground mb-3">
+          Select Your Duck
+        </h1>
         <div className="flex items-center justify-center gap-3 flex-wrap">
           {duckPersonalities.map((duck) => (
             <button
               key={duck.id}
               onClick={() => setActiveDuck(duck)}
               className={cn(
-                "relative flex items-center justify-center w-14 h-14 rounded-full transition-all hover:scale-110",
+                "relative flex items-center justify-center w-14 cursor-pointer h-14 rounded-full transition-all hover:scale-110",
                 "bg-secondary border-2",
                 activeDuck.id === duck.id
                   ? "border-primary scale-110"
-                  : "border-transparent opacity-60 hover:opacity-100",
+                  : "border-transparent opacity-60 hover:opacity-100"
               )}
               title={duck.name}
             >
@@ -86,5 +70,5 @@ export function DuckSelector() {
         <ActiveDuck duck={activeDuck} />
       </div>
     </div>
-  )
+  );
 }
