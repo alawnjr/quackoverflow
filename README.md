@@ -1,2 +1,2 @@
-# quack
-hackru fall 25
+# hackru fall 25
+
