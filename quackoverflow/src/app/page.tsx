@@ -20,7 +20,7 @@ export default async function Home() {
         strategy="afterInteractive"
       />
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        {/* @ts-ignore */}
+        {/* @ts-expect-error - Custom ElevenLabs element not in JSX types */}
         <elevenlabs-convai agent-id="agent_1001k6r3k6b5ehx9x698bqht44z3"></elevenlabs-convai>
         
         <Image
