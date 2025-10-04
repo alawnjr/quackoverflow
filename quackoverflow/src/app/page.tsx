@@ -1,6 +1,17 @@
 import Image from "next/image";
 import Script from "next/script";
 
+// Type declaration for ElevenLabs custom element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'elevenlabs-convai': {
+        'agent-id': string;
+      };
+    }
+  }
+}
+
 export default function Home() {
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
@@ -9,6 +20,7 @@ export default function Home() {
         strategy="afterInteractive"
       />
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        {/* @ts-ignore */}
         <elevenlabs-convai agent-id="agent_1001k6r3k6b5ehx9x698bqht44z3"></elevenlabs-convai>
         
         <Image
