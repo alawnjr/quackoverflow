@@ -1,7 +1,17 @@
 import Image from "next/image";
 import Script from "next/script";
 
-export default function Home() {
+export default async function Home() {
+  // Hardcoded test input: a tiny JS snippet with an intentional error
+  const testCode = `function add(a, b) {\n  return a + b;\n}\n\nconsole.log(add(1)); // missing second argument\n`;
+
+  try {
+    const result = await analyzeCodeWithGemini(testCode);
+    console.log("Gemini analysis result:", JSON.stringify(result, null, 2));
+  } catch (e) {
+    console.error("Error calling Gemini helper:", e);
+  }
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <Script 
