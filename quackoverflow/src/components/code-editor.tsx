@@ -3,18 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Copy, RotateCcw } from "lucide-react";
-
-const defaultCode = `// Your code here
-function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
-
-console.log(fibonacci(10));`;
+import { useCodeStore } from "@/store/codeStore";
 
 export const CodeEditor: React.FC = () => {
-  const [code, setCode] = useState(defaultCode);
-  const [selectedLines, setSelectedLines] = useState<Set<number>>(new Set());
+  const { code, setCode, selectedLines, setSelectedLines, resetCode } = useCodeStore();
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartLine, setDragStartLine] = useState<number | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -33,12 +25,12 @@ export const CodeEditor: React.FC = () => {
 
   const handleDuckClick = (lineIndex: number) => {
     if (selectedLines.has(lineIndex)) {
-      setSelectedLines(
-        new Set(Array.from(selectedLines).filter((i) => i !== lineIndex))
-      );
+      const newSelection = new Set(Array.from(selectedLines).filter((i) => i !== lineIndex));
+      setSelectedLines(newSelection);
       return;
     }
-    setSelectedLines(new Set(Array.from(selectedLines).concat(lineIndex)));
+    const newSelection = new Set(Array.from(selectedLines).concat(lineIndex));
+    setSelectedLines(newSelection);
     setDragStartLine(lineIndex);
     setIsDragging(true);
   };
@@ -60,8 +52,7 @@ export const CodeEditor: React.FC = () => {
   };
 
   const handleReset = () => {
-    setCode(defaultCode);
-    setSelectedLines(new Set());
+    resetCode();
   };
 
   const handleNewLine = (index: number) => {
@@ -87,7 +78,8 @@ export const CodeEditor: React.FC = () => {
       ] as HTMLInputElement;
       prevInput?.focus();
     }, 0);
-    setSelectedLines(new Set());
+    const newSelection = new Set<number>();
+    setSelectedLines(newSelection);
   };
 
   return (

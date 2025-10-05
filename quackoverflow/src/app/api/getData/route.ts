@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import analyzeCodeWithGemini from "./getGeminiFeedback";
-function getUserCode() {
-  return `print("Hello world")`;
-}
+import { useCodeStore } from "@/store/codeStore";
 
 export async function GET() {
   try {
-    const userCode = getUserCode();
-    const result = await analyzeCodeWithGemini(userCode);
+    const userCode = useCodeStore.getState().code;
+    console.log(userCode);
+    const geminiAdv = await analyzeCodeWithGemini(userCode);
 
-    return NextResponse.json(result);
+    return NextResponse.json({geminiAdv, userCode});
   } catch (err: any) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
     //if there is an error, start catch block
