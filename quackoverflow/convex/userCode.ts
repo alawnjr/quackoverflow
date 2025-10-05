@@ -16,13 +16,7 @@ export const getUserCode = query({
         `No saved code found for userId: ${args.userId}, returning default`
       );
       return {
-        code: `// Your code here
-function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
-}
-
-console.log(fibonacci(10));`,
+        code: ``,
         updatedAt: Date.now(),
         isDefault: true,
       };
