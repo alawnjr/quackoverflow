@@ -36,6 +36,7 @@ export const CodeEditor: React.FC = () => {
     "saved"
   );
   const editorRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSavedCodeRef = useRef<string>("");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasUnsavedChangesRef = useRef(false);
@@ -184,30 +185,23 @@ export const CodeEditor: React.FC = () => {
     clearSelectedLines();
   };
 
-  const handleNewLine = (index: number) => {
-    const newLines = [...lines];
-    newLines.splice(index + 1, 0, "");
-    setCode(newLines.join("\n"));
-    // Focus next line
-    setTimeout(() => {
-      const nextInput = editorRef.current?.querySelectorAll("input")[
-        index + 1
-      ] as HTMLInputElement;
-      nextInput?.focus();
-    }, 0);
-  };
+  const handleTextareaKeyDown = (
+    e: React.KeyboardEvent<HTMLTextAreaElement>
+  ) => {
+    // Handle tab key for indentation
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newCode = code.substring(0, start) + "  " + code.substring(end);
+      setCode(newCode);
 
-  const handleRemoveLine = (index: number) => {
-    const newLines = lines.filter((_, i) => i !== index);
-    setCode(newLines.join("\n"));
-    // Focus previous line
-    setTimeout(() => {
-      const prevInput = editorRef.current?.querySelectorAll("input")[
-        Math.max(0, index - 1)
-      ] as HTMLInputElement;
-      prevInput?.focus();
-    }, 0);
-    clearSelectedLines();
+      // Set cursor position after the inserted spaces
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 2;
+      }, 0);
+    }
   };
 
   return (
@@ -258,66 +252,58 @@ export const CodeEditor: React.FC = () => {
       </div>
 
       <div className="flex-1 overflow-auto" ref={editorRef}>
-        <div className="relative">
-          {lines.map((line, index) => (
-            <div
-              key={index}
-              className={`flex items-start group hover:bg-accent/50 transition-colors ${
-                selectedLines.has(index) ? "bg-accent" : ""
-              }`}
-            >
-              {/* Duck selector */}
+        <div className="relative flex">
+          {/* Line numbers and duck selectors */}
+          <div className="flex-shrink-0 bg-muted/30">
+            {lines.map((line, index) => (
               <div
-                className="flex-shrink-0 w-12 flex items-center justify-center py-2 cursor-pointer select-none"
-                onMouseDown={() => handleDuckClick(index)}
-                onMouseEnter={() => handleDuckEnter(index)}
+                key={index}
+                className={`flex items-center transition-colors ${
+                  selectedLines.has(index) ? "bg-accent" : ""
+                } hover:bg-accent/50`}
+                style={{ height: "24px" }}
               >
-                <span
-                  className={`text-lg transition-all ${
-                    selectedLines.has(index)
-                      ? "scale-125 opacity-100"
-                      : "opacity-40 group-hover:opacity-70"
-                  }`}
+                {/* Duck selector */}
+                <div
+                  className="w-12 flex items-center justify-center cursor-pointer select-none"
+                  onMouseDown={() => handleDuckClick(index)}
+                  onMouseEnter={() => handleDuckEnter(index)}
                 >
-                  🦆
-                </span>
-              </div>
+                  <span
+                    className={`text-lg transition-all ${
+                      selectedLines.has(index)
+                        ? "scale-125 opacity-100"
+                        : "opacity-40 hover:opacity-70"
+                    }`}
+                  >
+                    🦆
+                  </span>
+                </div>
 
-              {/* Line number */}
-              <div className="flex-shrink-0 w-12 py-2 text-right pr-4 text-xs text-muted-foreground select-none">
-                {index + 1}
+                {/* Line number */}
+                <div className="w-12 text-right pr-4 text-xs text-muted-foreground select-none">
+                  {index + 1}
+                </div>
               </div>
+            ))}
+          </div>
 
-              {/* Code line */}
-              <div className="flex-1 py-2 pr-6">
-                <input
-                  type="text"
-                  value={line}
-                  onChange={(e) => {
-                    const newLines = [...lines];
-                    newLines[index] = e.target.value;
-                    setCode(newLines.join("\n"));
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleNewLine(index);
-                    } else if (
-                      e.key === "Backspace" &&
-                      line === "" &&
-                      lines.length > 1
-                    ) {
-                      e.preventDefault();
-                      handleRemoveLine(index);
-                    }
-                  }}
-                  className="w-full bg-transparent text-foreground font-mono text-sm focus:outline-none"
-                  spellCheck={false}
-                  placeholder={index === 0 ? "Start typing your code..." : ""}
-                />
-              </div>
-            </div>
-          ))}
+          {/* Code textarea */}
+          <div className="flex-1 relative">
+            <textarea
+              ref={textareaRef}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={handleTextareaKeyDown}
+              className="w-full h-full bg-transparent text-foreground font-mono text-sm focus:outline-none resize-none p-2 leading-6"
+              style={{
+                minHeight: `${lines.length * 24}px`,
+                lineHeight: "24px",
+              }}
+              spellCheck={false}
+              placeholder="Start typing your code..."
+            />
+          </div>
         </div>
       </div>
 
