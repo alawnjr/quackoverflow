@@ -264,16 +264,16 @@ export const CodeEditor: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto" ref={editorRef}>
+      <div className="flex-1 overflow-auto bg-zinc-800" ref={editorRef}>
         <div className="relative flex">
           {/* Line numbers and duck selectors */}
-          <div className="flex-shrink-0 bg-muted/30">
+          <div className="flex-shrink-0 bg-zinc-800">
             {lines.map((line, index) => (
               <div
                 key={index}
                 className={`flex items-center transition-colors ${
-                  selectedLines.has(index) ? "bg-accent" : ""
-                } hover:bg-accent/50`}
+                  selectedLines.has(index) ? "bg-zinc-800" : ""
+                } hover:bg-zinc-800`}
                 style={{ height: "24px" }}
               >
                 {/* Duck selector */}
@@ -294,7 +294,7 @@ export const CodeEditor: React.FC = () => {
                 </div>
 
                 {/* Line number */}
-                <div className="w-12 text-right pr-4 text-xs text-muted-foreground select-none">
+                <div className="w-12 text-right pr-4 text-xs text-zinc-400 select-none">
                   {index + 1}
                 </div>
               </div>
@@ -308,7 +308,7 @@ export const CodeEditor: React.FC = () => {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               onKeyDown={handleTextareaKeyDown}
-              className="w-full h-full bg-transparent text-foreground font-mono text-sm focus:outline-none resize-none p-2 leading-6"
+              className="w-full h-full bg-zinc-800 text-zinc-100 font-mono text-sm focus:outline-none resize-none p-2 leading-6"
               style={{
                 minHeight: `${lines.length * 24}px`,
                 lineHeight: "24px",
