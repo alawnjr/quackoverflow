@@ -1,15 +1,27 @@
 import { NextResponse } from "next/server";
-import { useCodeStore } from "@/store/codeStore";
+import { convexClient } from "@/lib/convex";
+import { api } from "../../../../convex/_generated/api";
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const userCode = useCodeStore.getState().code;
+    const { userId } = await request.json();
 
-    console.log(userCode);
+    if (!userId) {
+      return NextResponse.json(
+        { error: "userId is required" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch user's code from Convex
+    const userCodeData = await convexClient.query(api.userCode.getUserCode, {
+      userId,
+    });
+
+    const userCode = userCodeData.code;
 
     return NextResponse.json({ userCode });
   } catch (err: any) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
-    //if there is an error, start catch block
   }
 }

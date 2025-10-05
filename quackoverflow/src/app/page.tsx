@@ -12,7 +12,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user?.id) {
-      sendContextualUpdate(`USER_ID=${user.id}`);
+      sendContextualUpdate(`userId=${user.id}`);
     }
   }, [user, sendContextualUpdate]);
 

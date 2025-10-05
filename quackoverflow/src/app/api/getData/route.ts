@@ -2,14 +2,16 @@ import { NextResponse } from "next/server";
 import analyzeCodeWithGemini from "./getGeminiFeedback";
 import { convexClient } from "@/lib/convex";
 import { api } from "../../../../convex/_generated/api";
-import { auth } from "@clerk/nextjs/server";
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
+    const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "userId is required" },
+        { status: 400 }
+      );
     }
 
     // Fetch user's code from Convex
