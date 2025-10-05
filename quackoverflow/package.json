@@ -6,8 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-build": "npm install --legacy-peer-deps && npm run build"
   },
+
   "dependencies": {
     "@elevenlabs/react": "^0.7.1",
     "@hookform/resolvers": "^3.10.0",
