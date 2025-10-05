@@ -33,40 +33,84 @@ export const CodeEditor: React.FC = () => {
     "saved"
   );
   const editorRef = useRef<HTMLDivElement>(null);
+  const lastSavedCodeRef = useRef<string>("");
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasUnsavedChangesRef = useRef(false);
 
-  // Sync with Convex data only on initial load
+  // Sync with Convex data only on initial load OR if no unsaved changes
   useEffect(() => {
-    if (userCodeData?.code && !isInitialized) {
-      setCode(userCodeData.code);
-      setIsInitialized(true);
+    if (userCodeData?.code) {
+      // Only update from server if:
+      // 1. Not initialized yet (first load)
+      // 2. No unsaved changes pending
+      if (!isInitialized) {
+        console.log("Initializing code from Convex:", {
+          codePreview: userCodeData.code.substring(0, 50),
+          isDefault: (userCodeData as any).isDefault,
+          userId,
+        });
+        setCode(userCodeData.code);
+        lastSavedCodeRef.current = userCodeData.code;
+        setIsInitialized(true);
+      } else if (
+        !hasUnsavedChangesRef.current &&
+        userCodeData.code !== lastSavedCodeRef.current
+      ) {
+        // Only sync from server if we don't have unsaved changes
+        // This handles the case where the code was updated in another tab/session
+        console.log("Syncing code from Convex (no local changes)", {
+          isDefault: (userCodeData as any).isDefault,
+          userId,
+        });
+        setCode(userCodeData.code);
+        lastSavedCodeRef.current = userCodeData.code;
+      } else if (
+        (userCodeData as any).isDefault &&
+        hasUnsavedChangesRef.current
+      ) {
+        console.warn(
+          "Server returned default code but we have unsaved changes - ignoring",
+          { userId }
+        );
+      }
     }
-  }, [userCodeData, isInitialized]);
+  }, [userCodeData, isInitialized, userId]);
 
   // Debounce updates to Convex
   useEffect(() => {
-    if (code && userCodeData?.code !== code && isInitialized) {
+    // Only save if initialized and code has changed from last saved version
+    if (isInitialized && code && code !== lastSavedCodeRef.current) {
       setSaveStatus("unsaved");
+      hasUnsavedChangesRef.current = true;
 
-      const timeoutId = setTimeout(async () => {
+      // Clear any existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(async () => {
         setSaveStatus("saving");
+        console.log("Saving code to Convex:", code.substring(0, 50));
         try {
           await updateCode({ userId, code });
+          lastSavedCodeRef.current = code;
+          hasUnsavedChangesRef.current = false;
           setSaveStatus("saved");
-          // Reset to unsaved after 2 seconds to show the change was acknowledged
-          setTimeout(() => {
-            if (code === userCodeData?.code) {
-              setSaveStatus("saved");
-            }
-          }, 2000);
+          console.log("Code saved successfully");
         } catch (error) {
           setSaveStatus("unsaved");
+          hasUnsavedChangesRef.current = true;
           console.error("Failed to save code:", error);
         }
       }, 1000); // Update after 1 second of no changes
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+      };
     }
-  }, [code, userId, updateCode, userCodeData?.code, isInitialized]);
+  }, [code, userId, updateCode, isInitialized]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -129,8 +173,11 @@ function fibonacci(n) {
 console.log(fibonacci(10));`;
     setCode(defaultCode);
     setSaveStatus("saving");
+    hasUnsavedChangesRef.current = true;
     try {
       await updateCode({ userId, code: defaultCode });
+      lastSavedCodeRef.current = defaultCode;
+      hasUnsavedChangesRef.current = false;
       setSaveStatus("saved");
     } catch (error) {
       setSaveStatus("unsaved");

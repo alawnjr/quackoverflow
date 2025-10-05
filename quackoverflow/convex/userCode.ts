@@ -12,6 +12,9 @@ export const getUserCode = query({
 
     if (!userCode) {
       // Return default code if user doesn't have any saved code
+      console.log(
+        `No saved code found for userId: ${args.userId}, returning default`
+      );
       return {
         code: `// Your code here
 function fibonacci(n) {
@@ -21,12 +24,15 @@ function fibonacci(n) {
 
 console.log(fibonacci(10));`,
         updatedAt: Date.now(),
+        isDefault: true,
       };
     }
 
+    console.log(`Found saved code for userId: ${args.userId}`);
     return {
       code: userCode.code,
       updatedAt: userCode.updatedAt,
+      isDefault: false,
     };
   },
 });
@@ -38,22 +44,30 @@ export const updateUserCode = mutation({
     code: v.string(),
   },
   handler: async (ctx, args) => {
+    console.log(
+      `Updating code for userId: ${args.userId}, code length: ${args.code.length}`
+    );
+
     const existing = await ctx.db
       .query("userCode")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .first();
 
     if (existing) {
+      console.log(`Patching existing record for userId: ${args.userId}`);
       await ctx.db.patch(existing._id, {
         code: args.code,
         updatedAt: Date.now(),
       });
     } else {
+      console.log(`Inserting new record for userId: ${args.userId}`);
       await ctx.db.insert("userCode", {
         userId: args.userId,
         code: args.code,
         updatedAt: Date.now(),
       });
     }
+
+    console.log(`Successfully saved code for userId: ${args.userId}`);
   },
 });
