@@ -14,7 +14,7 @@ export interface DuckPersonality {
 
 const duckPersonalities: DuckPersonality[] = [
   {
-    id: "rubberduck",
+    id: "rubberDuck",
     name: "Rubber Duck",
     emoji: "🦆",
     description:
@@ -22,7 +22,7 @@ const duckPersonalities: DuckPersonality[] = [
     color: "from-blue-500/20 to-cyan-500/20",
   },
   {
-    id: "angryduck",
+    id: "angryDuck",
     name: "Angry Duck",
     emoji: "🤬",
     description: "Gets angry when you make mistakes",
