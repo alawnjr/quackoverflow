@@ -15,8 +15,11 @@ import { useUIStore } from "@/store/uiStore";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import { useConversation } from "@elevenlabs/react";
 
 export const CodeEditor: React.FC = () => {
+  const { sendContextualUpdate } = useConversation();
+
   const { selectedLines, setSelectedLines, clearSelectedLines } = useUIStore();
   const { user } = useUser();
   const userId = user?.id || "anonymous";
@@ -40,9 +43,6 @@ export const CodeEditor: React.FC = () => {
   // Sync with Convex data only on initial load OR if no unsaved changes
   useEffect(() => {
     if (userCodeData?.code) {
-      // Only update from server if:
-      // 1. Not initialized yet (first load)
-      // 2. No unsaved changes pending
       if (!isInitialized) {
         console.log("Initializing code from Convex:", {
           codePreview: userCodeData.code.substring(0, 50),
@@ -97,6 +97,10 @@ export const CodeEditor: React.FC = () => {
           hasUnsavedChangesRef.current = false;
           setSaveStatus("saved");
           console.log("Code saved successfully");
+
+          sendContextualUpdate(
+            `Updated User Code ${new Date().toLocaleTimeString()}\n ${code}`
+          );
         } catch (error) {
           setSaveStatus("unsaved");
           hasUnsavedChangesRef.current = true;

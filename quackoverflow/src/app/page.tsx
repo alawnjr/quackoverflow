@@ -2,20 +2,8 @@
 import { DuckSelector } from "@/components/duck-selector";
 import { CodeEditor } from "@/components/code-editor";
 import { Header } from "@/components/header";
-import { useUser } from "@clerk/nextjs";
-import { useConversation } from "@elevenlabs/react";
-import { useEffect } from "react";
 
 export default function Home() {
-  const { user } = useUser();
-  const { sendContextualUpdate } = useConversation();
-
-  useEffect(() => {
-    if (user?.id) {
-      sendContextualUpdate(`userId=${user.id}`);
-    }
-  }, [user, sendContextualUpdate]);
-
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
       <Header />

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import analyzeCodeWithGemini from "./getGeminiFeedback";
 import { convexClient } from "@/lib/convex";
 import { api } from "../../../../convex/_generated/api";
 
-export async function POST(request: Request) {
+export async function GET() {
   try {
-    const { userId } = await request.json();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json(
