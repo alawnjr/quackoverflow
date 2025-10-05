@@ -2,69 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Copy, RotateCcw, Cloud, CloudOff } from "lucide-react";
+import { Play, Copy, RotateCcw } from "lucide-react";
+import { useUIStore } from "@/store/uiStore";
 import { useCodeStore } from "@/store/codeStore";
-import { db } from "@/lib/firebase";
-import { doc, setDoc } from "firebase/firestore";
-import { loadCodeFromFirestore } from "@/lib/firebaseCodeSync";
 
 export const CodeEditor: React.FC = () => {
-  const { code, setCode, selectedLines, setSelectedLines, resetCode } = useCodeStore();
+  const { selectedLines, setSelectedLines, clearSelectedLines } = useUIStore();
+  const { code, setCode } = useCodeStore();
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartLine, setDragStartLine] = useState<number | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error'>('saved');
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const editorRef = useRef<HTMLDivElement>(null);
 
   const lines = code.split("\n");
-
-  // Load code from Firebase on component mount
-  useEffect(() => {
-    const loadCode = async () => {
-      try {
-        const savedCode = await loadCodeFromFirestore();
-        if (savedCode) {
-          setCode(savedCode);
-        }
-      } catch (error) {
-        console.error('Error loading code from Firebase:', error);
-      } finally {
-        setIsInitialLoad(false);
-      }
-    };
-
-    loadCode();
-  }, [setCode]);
-
-  // Auto-save code to Firebase with debouncing
-  useEffect(() => {
-    // Skip saving on initial load
-    if (isInitialLoad) return;
-
-    const saveToFirebase = async () => {
-      try {
-        setSaveStatus('saving');
-        const codeDocRef = doc(db, 'code', 'code');
-        await setDoc(codeDocRef, {
-          code,
-          updatedAt: new Date().toISOString(),
-          lineCount: lines.length,
-          characterCount: code.length
-        });
-        setSaveStatus('saved');
-      } catch (error) {
-        console.error('Error saving to Firebase:', error);
-        setSaveStatus('error');
-      }
-    };
-
-    // Debounce: wait 1.5 seconds after last change before saving
-    const timeoutId = setTimeout(() => {
-      saveToFirebase();
-    }, 1500);
-
-    return () => clearTimeout(timeoutId);
-  }, [code, lines.length, isInitialLoad]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -78,7 +27,9 @@ export const CodeEditor: React.FC = () => {
 
   const handleDuckClick = (lineIndex: number) => {
     if (selectedLines.has(lineIndex)) {
-      const newSelection = new Set(Array.from(selectedLines).filter((i) => i !== lineIndex));
+      const newSelection = new Set(
+        Array.from(selectedLines).filter((i) => i !== lineIndex)
+      );
       setSelectedLines(newSelection);
       return;
     }
@@ -105,7 +56,14 @@ export const CodeEditor: React.FC = () => {
   };
 
   const handleReset = () => {
-    resetCode();
+    setCode(`// Your code here
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10));`);
+    clearSelectedLines();
   };
 
   const handleNewLine = (index: number) => {
@@ -131,8 +89,7 @@ export const CodeEditor: React.FC = () => {
       ] as HTMLInputElement;
       prevInput?.focus();
     }, 0);
-    const newSelection = new Set<number>();
-    setSelectedLines(newSelection);
+    clearSelectedLines();
   };
 
   return (
@@ -140,27 +97,7 @@ export const CodeEditor: React.FC = () => {
       {/* Editor Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold text-foreground">Code Editor</h2>
-            {saveStatus === 'saving' && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Cloud className="w-3 h-3 animate-pulse" />
-                Saving...
-              </span>
-            )}
-            {saveStatus === 'saved' && (
-              <span className="flex items-center gap-1 text-xs text-green-600">
-                <Cloud className="w-3 h-3" />
-                Saved
-              </span>
-            )}
-            {saveStatus === 'error' && (
-              <span className="flex items-center gap-1 text-xs text-red-600">
-                <CloudOff className="w-3 h-3" />
-                Error
-              </span>
-            )}
-          </div>
+          <h2 className="text-lg font-semibold text-foreground">Code Editor</h2>
           <p className="text-sm text-muted-foreground">
             {selectedLines.size > 0
               ? `${selectedLines.size} line${
