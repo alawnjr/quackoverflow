@@ -1,22 +1,17 @@
 "use client";
 
-import { useConversation } from "@elevenlabs/react";
 import { useCallback } from "react";
 import { DuckPersonality } from "@/components/duck-selector";
 import { duckAgentIds } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useSharedConversation } from "@/contexts/ConversationContext";
 
 interface ActiveDuckProps {
   duck: DuckPersonality;
 }
 
 export function ActiveDuck({ duck }: ActiveDuckProps) {
-  const conversation = useConversation({
-    onConnect: () => console.log("Connected"),
-    onDisconnect: () => console.log("Disconnected"),
-    onMessage: (message) => console.log("Message:", message),
-    onError: (error) => console.error("Error:", error),
-  });
+  const conversation = useSharedConversation();
   const startConversation = useCallback(async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -103,8 +98,8 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
           {!isConnected
             ? "Disconnected"
             : isSpeaking
-            ? "Speaking..."
-            : "Listening"}
+              ? "Speaking..."
+              : "Listening"}
         </span>
       </div>
 

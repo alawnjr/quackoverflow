@@ -15,10 +15,10 @@ import { useUIStore } from "@/store/uiStore";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
-import { useConversation } from "@elevenlabs/react";
+import { useSharedConversation } from "@/contexts/ConversationContext";
 
 export const CodeEditor: React.FC = () => {
-  const { sendContextualUpdate } = useConversation();
+  const conversation = useSharedConversation();
 
   const { selectedLines, setSelectedLines, clearSelectedLines } = useUIStore();
   const { user } = useUser();
@@ -55,9 +55,11 @@ export const CodeEditor: React.FC = () => {
         setIsInitialized(true);
 
         // Send contextual update after initial code load
-        sendContextualUpdate(
-          `Loaded User Code ${new Date().toLocaleTimeString()}\n ${userCodeData.code}`
-        );
+        if (conversation.status === "connected") {
+          conversation.sendUserMessage(
+            `Here is the User's Code, use it when they ask for it ${new Date().toLocaleTimeString()}\n ${userCodeData.code}`
+          );
+        }
       } else if (
         !hasUnsavedChangesRef.current &&
         userCodeData.code !== lastSavedCodeRef.current
@@ -80,7 +82,13 @@ export const CodeEditor: React.FC = () => {
         );
       }
     }
-  }, [userCodeData, isInitialized, userId]);
+  }, [
+    userCodeData,
+    isInitialized,
+    userId,
+    conversation.status,
+    conversation.sendUserMessage,
+  ]);
 
   // Debounce updates to Convex
   useEffect(() => {
@@ -104,9 +112,15 @@ export const CodeEditor: React.FC = () => {
           setSaveStatus("saved");
           console.log("Code saved successfully");
 
-          sendContextualUpdate(
-            `Updated User Code ${new Date().toLocaleTimeString()}\n ${code}`
-          );
+          console.log("Sending contextual update with code:", {
+            codePreview: code.substring(0, 50),
+            userId,
+          });
+          if (conversation.status === "connected") {
+            conversation.sendUserMessage(
+              `Here is the updated user's code ${new Date().toLocaleTimeString()}\n ${code}`
+            );
+          }
         } catch (error) {
           setSaveStatus("unsaved");
           hasUnsavedChangesRef.current = true;
@@ -120,7 +134,14 @@ export const CodeEditor: React.FC = () => {
         }
       };
     }
-  }, [code, userId, updateCode, isInitialized]);
+  }, [
+    code,
+    userId,
+    updateCode,
+    isInitialized,
+    conversation.status,
+    conversation.sendUserMessage,
+  ]);
 
   useEffect(() => {
     const handleMouseUp = () => {
