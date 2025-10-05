@@ -36,9 +36,9 @@ export function DuckSelector() {
   );
 
   const playQuackSound = () => {
-    const audio = new Audio('/quack.mp3');
-    audio.play().catch(error => {
-      console.error('Error playing quack sound:', error);
+    const audio = new Audio("/quack.mp3");
+    audio.play().catch((error) => {
+      console.error("Error playing quack sound:", error);
     });
   };
 
