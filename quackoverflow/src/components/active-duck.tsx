@@ -49,11 +49,44 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
   }, [conversation]);
   const isConnected = conversation.status === "connected";
   const isSpeaking = conversation.isSpeaking;
+  const transcriptMessages = conversation.transcriptMessages || [];
+  const currentMessage = transcriptMessages[transcriptMessages.length - 1];
 
   return (
-    <div className="flex flex-col items-center gap-8 w-full max-w-md">
+    <div className="flex flex-col items-center gap-4 w-full max-w-md">
+      {/* End Call Button - Shown at top when connected */}
+      {isConnected && (
+        <button
+          onClick={stopConversation}
+          className={cn(
+            "w-full px-4 py-2 rounded-xl font-semibold transition-all duration-200",
+            "shadow-lg hover:shadow-xl hover:-translate-y-0.5",
+            "bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600"
+          )}
+        >
+          End Conversation
+        </button>
+      )}
+
+      {/* Current Caption Display - Fixed height for UI stability */}
+      {isConnected && (
+        <div className="w-full h-20 bg-secondary/30 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg overflow-hidden">
+          <div className="h-full overflow-y-auto p-3 flex items-center justify-center">
+            {currentMessage ? (
+              <p className="text-sm leading-relaxed text-center text-foreground">
+                {currentMessage.message}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">
+                Waiting for message...
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Duck Profile Picture */}
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-2">
         <div className="relative">
           {/* Speaking Animation Rings */}
           {isConnected && isSpeaking && (
@@ -66,7 +99,7 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
           {/* Main Duck Avatar */}
           <div
             className={cn(
-              "relative w-40 h-40 rounded-full overflow-hidden border-4 shadow-2xl bg-gradient-to-br flex items-center justify-center transition-all duration-300",
+              "relative w-32 h-32 rounded-full overflow-hidden border-4 shadow-2xl bg-gradient-to-br flex items-center justify-center transition-all duration-300",
               duck.color,
               isConnected
                 ? isSpeaking
@@ -75,7 +108,7 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
                 : "border-border"
             )}
           >
-            <span className="text-7xl">{duck.emoji}</span>
+            <span className="text-6xl">{duck.emoji}</span>
 
             {/* Status Indicator Dot */}
             {isConnected && (
@@ -92,18 +125,18 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
         </div>
 
         {/* Duck Info */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <div className="text-center space-y-1">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             {duck.name}
           </h2>
-          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+          <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
             {duck.description}
           </p>
         </div>
       </div>
 
       {/* Status Badge */}
-      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 backdrop-blur-sm border border-border/50">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 backdrop-blur-sm border border-border/50">
         <div
           className={cn(
             "w-2 h-2 rounded-full transition-colors",
@@ -114,7 +147,7 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
               : "bg-muted-foreground"
           )}
         />
-        <span className="text-sm font-medium">
+        <span className="text-xs font-medium">
           {!isConnected
             ? "Disconnected"
             : isSpeaking
@@ -123,37 +156,19 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
         </span>
       </div>
 
-      {/* Conversation Controls */}
-      <div className="flex gap-3 w-full">
+      {/* Start Conversation Button - Only shown when not connected */}
+      {!isConnected && (
         <button
           onClick={startConversation}
-          disabled={isConnected}
           className={cn(
-            "flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200",
+            "w-full px-4 py-2 rounded-xl font-semibold transition-all duration-200",
             "shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0",
-            isConnected
-              ? "bg-muted text-muted-foreground"
-              : "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
+            "bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
           )}
         >
-          {isConnected ? "Connected" : "Start Conversation"}
+          Start Conversation
         </button>
-        <button
-          onClick={stopConversation}
-          disabled={!isConnected}
-          className={cn(
-            "flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200",
-            "shadow-lg hover:shadow-xl hover:-translate-y-0.5",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0",
-            !isConnected
-              ? "bg-muted text-muted-foreground"
-              : "bg-gradient-to-r from-red-500 to-rose-500 text-white hover:from-red-600 hover:to-rose-600"
-          )}
-        >
-          End Conversation
-        </button>
-      </div>
+      )}
     </div>
   );
 }
