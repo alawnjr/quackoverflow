@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActiveDuck } from "@/components/active-duck";
 import { cn } from "@/lib/utils";
 

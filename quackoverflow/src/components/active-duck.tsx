@@ -5,6 +5,9 @@ import { DuckPersonality } from "@/components/duck-selector";
 import { duckAgentIds } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useSharedConversation } from "@/contexts/ConversationContext";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
 interface ActiveDuckProps {
   duck: DuckPersonality;
@@ -12,6 +15,12 @@ interface ActiveDuckProps {
 
 export function ActiveDuck({ duck }: ActiveDuckProps) {
   const conversation = useSharedConversation();
+  const { user } = useUser();
+  const userId = user?.id || "anonymous";
+
+  // Fetch user's code from Convex
+  const userCodeData = useQuery(api.userCode.getUserCode, { userId });
+
   const startConversation = useCallback(async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -20,10 +29,21 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
         // userId: "YOUR_CUSTOMER_USER_ID", // Optional field for tracking your end user IDs
         connectionType: "webrtc",
       });
+
+      // Send the user's code to the conversation when starting
+      if (userCodeData?.code) {
+        console.log("Sending code to conversation on start:", {
+          codePreview: userCodeData.code.substring(0, 50),
+          userId,
+        });
+        conversation.sendUserMessage(
+          `Here is the User's Code, use it when they ask for it ${new Date().toLocaleTimeString()}\n${userCodeData.code}`
+        );
+      }
     } catch (error) {
       console.error("Failed to start conversation:", error);
     }
-  }, [conversation]);
+  }, [conversation, duck.id, userCodeData, userId]);
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
   }, [conversation]);

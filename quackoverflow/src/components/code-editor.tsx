@@ -40,7 +40,6 @@ export const CodeEditor: React.FC = () => {
   const lastSavedCodeRef = useRef<string>("");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasUnsavedChangesRef = useRef(false);
-  const initialCodeSentRef = useRef(false);
 
   // Sync with Convex data only on initial load OR if no unsaved changes
   useEffect(() => {
@@ -77,25 +76,6 @@ export const CodeEditor: React.FC = () => {
       }
     }
   }, [userCodeData, isInitialized, userId]);
-
-  // Send initial code to conversation when both code is loaded and conversation is connected
-  useEffect(() => {
-    if (
-      isInitialized &&
-      conversation.status === "connected" &&
-      !initialCodeSentRef.current &&
-      code
-    ) {
-      console.log("Sending initial code to conversation:", {
-        codePreview: code.substring(0, 50),
-        userId,
-      });
-      conversation.sendUserMessage(
-        `Here is the User's Code, use it when they ask for it ${new Date().toLocaleTimeString()}\n${code}`
-      );
-      initialCodeSentRef.current = true;
-    }
-  }, [isInitialized, conversation.status, code, userId, conversation]);
 
   // Debounce updates to Convex
   useEffect(() => {
