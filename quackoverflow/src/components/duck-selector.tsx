@@ -36,30 +36,52 @@ export function DuckSelector() {
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-b from-background to-muted/20">
       {/* Duck Profile Circles at Top */}
-      <div className="p-4 border-b border-border">
-        <h1 className="text-sm font-semibold text-muted-foreground mb-3">
-          Select Your Duck
+      <div className="p-6 border-b border-border/50 backdrop-blur-sm">
+        <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent mb-4">
+          Choose Your Assistant
         </h1>
-        <div className="flex items-center justify-center gap-3 flex-wrap">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
           {duckPersonalities.map((duck) => (
             <button
               key={duck.id}
               onClick={() => setActiveDuck(duck)}
               className={cn(
-                "relative flex items-center justify-center w-14 cursor-pointer h-14 rounded-full transition-all hover:scale-110",
-                "bg-secondary border-2",
+                "group relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300",
+                "hover:scale-105 hover:-translate-y-1",
                 activeDuck.id === duck.id
-                  ? "border-primary scale-110"
-                  : "border-transparent opacity-60 hover:opacity-100"
+                  ? "bg-primary/10 shadow-lg shadow-primary/20"
+                  : "hover:bg-secondary/50"
               )}
               title={duck.name}
             >
-              <span className="text-3xl">{duck.emoji}</span>
-              {activeDuck.id === duck.id && (
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-primary" />
-              )}
+              <div
+                className={cn(
+                  "relative flex items-center justify-center w-20 h-20 rounded-full transition-all duration-300",
+                  "bg-gradient-to-br overflow-hidden border-3",
+                  "shadow-lg",
+                  activeDuck.id === duck.id
+                    ? "border-primary scale-110 shadow-primary/30"
+                    : "border-border/30 opacity-70 group-hover:opacity-100 group-hover:border-primary/50",
+                  duck.color
+                )}
+              >
+                <span className="text-4xl">{duck.emoji}</span>
+                {activeDuck.id === duck.id && (
+                  <div className="absolute inset-0 rounded-full border-2 border-primary animate-pulse" />
+                )}
+              </div>
+              <span
+                className={cn(
+                  "text-xs font-medium transition-colors",
+                  activeDuck.id === duck.id
+                    ? "text-primary"
+                    : "text-muted-foreground group-hover:text-foreground"
+                )}
+              >
+                {duck.name}
+              </span>
             </button>
           ))}
         </div>
