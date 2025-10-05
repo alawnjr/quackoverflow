@@ -35,6 +35,18 @@ export function DuckSelector() {
     duckPersonalities[0]
   );
 
+  const playQuackSound = () => {
+    const audio = new Audio('/quack.mp3');
+    audio.play().catch(error => {
+      console.error('Error playing quack sound:', error);
+    });
+  };
+
+  const handleDuckSelect = (duck: DuckPersonality) => {
+    setActiveDuck(duck);
+    playQuackSound();
+  };
+
   return (
     <div className="flex flex-col h-full bg-gradient-to-b from-background to-muted/20">
       {/* Duck Profile Circles at Top */}
@@ -46,7 +58,7 @@ export function DuckSelector() {
           {duckPersonalities.map((duck) => (
             <button
               key={duck.id}
-              onClick={() => setActiveDuck(duck)}
+              onClick={() => handleDuckSelect(duck)}
               className={cn(
                 "group relative flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300",
                 "hover:scale-105 hover:-translate-y-1",
