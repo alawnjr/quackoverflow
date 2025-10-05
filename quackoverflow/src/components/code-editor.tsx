@@ -2,18 +2,71 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Copy, RotateCcw } from "lucide-react";
+import {
+  Play,
+  Copy,
+  RotateCcw,
+  Cloud,
+  CloudOff,
+  Loader2,
+  Check,
+} from "lucide-react";
 import { useUIStore } from "@/store/uiStore";
-import { useCodeStore } from "@/store/codeStore";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 
 export const CodeEditor: React.FC = () => {
   const { selectedLines, setSelectedLines, clearSelectedLines } = useUIStore();
-  const { code, setCode } = useCodeStore();
+  const { user } = useUser();
+  const userId = user?.id || "anonymous";
+
+  // Fetch user's code from Convex
+  const userCodeData = useQuery(api.userCode.getUserCode, { userId });
+  const updateCode = useMutation(api.userCode.updateUserCode);
+
+  const [code, setCode] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartLine, setDragStartLine] = useState<number | null>(null);
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">(
+    "saved"
+  );
   const editorRef = useRef<HTMLDivElement>(null);
 
-  const lines = code.split("\n");
+  // Sync with Convex data only on initial load
+  useEffect(() => {
+    if (userCodeData?.code && !isInitialized) {
+      setCode(userCodeData.code);
+      setIsInitialized(true);
+    }
+  }, [userCodeData, isInitialized]);
+
+  // Debounce updates to Convex
+  useEffect(() => {
+    if (code && userCodeData?.code !== code && isInitialized) {
+      setSaveStatus("unsaved");
+
+      const timeoutId = setTimeout(async () => {
+        setSaveStatus("saving");
+        try {
+          await updateCode({ userId, code });
+          setSaveStatus("saved");
+          // Reset to unsaved after 2 seconds to show the change was acknowledged
+          setTimeout(() => {
+            if (code === userCodeData?.code) {
+              setSaveStatus("saved");
+            }
+          }, 2000);
+        } catch (error) {
+          setSaveStatus("unsaved");
+          console.error("Failed to save code:", error);
+        }
+      }, 1000); // Update after 1 second of no changes
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [code, userId, updateCode, userCodeData?.code, isInitialized]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -24,6 +77,17 @@ export const CodeEditor: React.FC = () => {
     window.addEventListener("mouseup", handleMouseUp);
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, []);
+
+  // Show loading state
+  if (!userCodeData) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center">
+        <p className="text-muted-foreground">Loading your code...</p>
+      </div>
+    );
+  }
+
+  const lines = code.split("\n");
 
   const handleDuckClick = (lineIndex: number) => {
     if (selectedLines.has(lineIndex)) {
@@ -55,14 +119,23 @@ export const CodeEditor: React.FC = () => {
     navigator.clipboard.writeText(code);
   };
 
-  const handleReset = () => {
-    setCode(`// Your code here
+  const handleReset = async () => {
+    const defaultCode = `// Your code here
 function fibonacci(n) {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-console.log(fibonacci(10));`);
+console.log(fibonacci(10));`;
+    setCode(defaultCode);
+    setSaveStatus("saving");
+    try {
+      await updateCode({ userId, code: defaultCode });
+      setSaveStatus("saved");
+    } catch (error) {
+      setSaveStatus("unsaved");
+      console.error("Failed to save code:", error);
+    }
     clearSelectedLines();
   };
 
@@ -106,7 +179,28 @@ console.log(fibonacci(10));`);
               : "Write or paste your code to debug"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Save Status Indicator */}
+          <div className="flex items-center gap-2 text-sm">
+            {saveStatus === "saved" && (
+              <>
+                <Check className="w-4 h-4 text-green-500" />
+                <span className="text-green-500">Saved</span>
+              </>
+            )}
+            {saveStatus === "saving" && (
+              <>
+                <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                <span className="text-blue-500">Saving...</span>
+              </>
+            )}
+            {saveStatus === "unsaved" && (
+              <>
+                <Cloud className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Unsaved changes</span>
+              </>
+            )}
+          </div>
           <Button variant="outline" size="sm" onClick={handleCopy}>
             <Copy className="w-4 h-4 mr-2" />
             Copy

@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# QuackOverflow 🦆
 
-## Getting Started
+An AI-powered code debugging assistant with personality-driven rubber duck debugging.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🦆 **Interactive Duck Assistants** - Choose from different duck personalities to help debug your code
+- 💬 **Voice Conversations** - Talk to your duck using ElevenLabs voice AI
+- 🎨 **Real-time Code Editor** - Write and edit code with syntax highlighting
+- 🔐 **User Authentication** - Secure login with Clerk
+- 💾 **Persistent Code Storage** - Your code is automatically saved per-user with Convex
+- 🤖 **AI-Powered Feedback** - Get intelligent code analysis from Google Gemini
+
+## 🚀 Quick Start
+
+See [QUICK_START.md](./QUICK_START.md) for detailed setup instructions.
+
+### Prerequisites
+
+- Node.js 18+
+- npm/yarn/pnpm
+- A Convex account (free at [convex.dev](https://convex.dev))
+- Clerk account for authentication
+- ElevenLabs API key for voice
+- Google Gemini API key for code analysis
+
+### Setup
+
+1. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+2. **Initialize Convex**:
+
+   ```bash
+   npx convex dev
+   ```
+
+   Follow the prompts to set up your Convex project.
+
+3. **Configure environment variables**:
+
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+   Fill in your API keys and URLs.
+
+4. **Run the development servers**:
+
+   Terminal 1:
+
+   ```bash
+   npx convex dev
+   ```
+
+   Terminal 2:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000)
+
+## 📚 Documentation
+
+- [QUICK_START.md](./QUICK_START.md) - Quick setup guide
+- [CONVEX_SETUP.md](./CONVEX_SETUP.md) - Detailed Convex configuration
+- [MIGRATION_SUMMARY.md](./MIGRATION_SUMMARY.md) - Migration from Zustand to Convex
+
+## 🏗️ Tech Stack
+
+- **Frontend**: Next.js 15, React, TypeScript, TailwindCSS
+- **Database**: Convex (real-time backend)
+- **Authentication**: Clerk
+- **AI/ML**:
+  - Google Gemini for code analysis
+  - ElevenLabs for voice interactions
+- **UI Components**: Radix UI, shadcn/ui
+
+## 📁 Project Structure
+
+```
+quackoverflow/
+├── convex/              # Convex backend functions
+│   ├── schema.ts        # Database schema
+│   └── userCode.ts      # Code storage functions
+├── src/
+│   ├── app/             # Next.js app router
+│   ├── components/      # React components
+│   ├── lib/             # Utility functions
+│   └── store/           # Client state management
+└── public/              # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔑 Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Required variables in `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Convex
+NEXT_PUBLIC_CONVEX_URL=
 
-## Learn More
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
 
-To learn more about Next.js, take a look at the following resources:
+# ElevenLabs Voice AI
+NEXT_PUBLIC_ELEVENLABS_API_KEY=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Google Gemini
+GEMINI_API_KEY=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎯 How It Works
 
-## Deploy on Vercel
+1. **User logs in** with Clerk authentication
+2. **Code editor loads** the user's previously saved code from Convex
+3. **User writes/edits code** with auto-save (1-second debounce)
+4. **Select a duck personality** to help debug
+5. **Start voice conversation** to discuss code issues
+6. **Get AI feedback** from Gemini on code quality and bugs
+7. **Code persists** across sessions and devices
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🤝 Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project was created for HackRU Fall 2025.
+
+## 🐛 Troubleshooting
+
+See [QUICK_START.md](./QUICK_START.md) for common issues and solutions.
+
+---
+
+Built with 💙 and 🦆 by the QuackOverflow team
