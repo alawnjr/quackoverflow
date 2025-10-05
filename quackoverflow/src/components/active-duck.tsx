@@ -20,7 +20,7 @@ export function ActiveDuck({ duck }: ActiveDuckProps) {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       await conversation.startSession({
-        agentId: duckAgentIds[duck.id as keyof typeof duckAgentIds], // Replace with your agent ID
+        agentId: duckAgentIds[duck.id as keyof typeof duckAgentIds],
         // userId: "YOUR_CUSTOMER_USER_ID", // Optional field for tracking your end user IDs
         connectionType: "webrtc",
       });

@@ -43,7 +43,14 @@ export async function analyzeCodeWithGemini(
   // NODE_ENV !== 'production'. Do NOT rely on this in production.
   if (!apiKey && process.env.NODE_ENV !== "production") {
     try {
-      const envPath = path.join(process.cwd(), "src", "app", "api", "gemini", ".env");
+      const envPath = path.join(
+        process.cwd(),
+        "src",
+        "app",
+        "api",
+        "gemini",
+        ".env"
+      );
       if (fs.existsSync(envPath)) {
         const raw = fs.readFileSync(envPath, "utf8");
         const m = raw.match(/^\s*GEMINI_API_KEY\s*=\s*(.+)\s*$/m);
@@ -78,32 +85,44 @@ export async function analyzeCodeWithGemini(
     } else {
       // Use type assertion to handle the response object
       const responseObj = response as unknown as Record<string, unknown>;
-      
+
       if (responseObj?.text) {
         modelText = responseObj.text as string;
-      } else if (responseObj?.output && Array.isArray(responseObj.output) && responseObj.output[0]) {
+      } else if (
+        responseObj?.output &&
+        Array.isArray(responseObj.output) &&
+        responseObj.output[0]
+      ) {
         const output = responseObj.output[0] as Record<string, unknown>;
         const content = output.content;
         if (Array.isArray(content)) {
-          modelText = content.map((c: unknown) => {
-            const item = c as Record<string, unknown>;
-            return item.text ?? JSON.stringify(c);
-          }).join("\n");
+          modelText = content
+            .map((c: unknown) => {
+              const item = c as Record<string, unknown>;
+              return item.text ?? JSON.stringify(c);
+            })
+            .join("\n");
         } else {
           const contentObj = content as Record<string, unknown>;
-          modelText = contentObj.text as string ?? JSON.stringify(content);
+          modelText = (contentObj.text as string) ?? JSON.stringify(content);
         }
-      } else if (responseObj?.candidates && Array.isArray(responseObj.candidates) && responseObj.candidates[0]) {
+      } else if (
+        responseObj?.candidates &&
+        Array.isArray(responseObj.candidates) &&
+        responseObj.candidates[0]
+      ) {
         const candidate = responseObj.candidates[0] as Record<string, unknown>;
         const content = candidate.content;
         if (Array.isArray(content)) {
-          modelText = content.map((p: unknown) => {
-            const item = p as Record<string, unknown>;
-            return item.text ?? JSON.stringify(p);
-          }).join("\n");
+          modelText = content
+            .map((p: unknown) => {
+              const item = p as Record<string, unknown>;
+              return item.text ?? JSON.stringify(p);
+            })
+            .join("\n");
         } else {
           const contentObj = content as Record<string, unknown>;
-          modelText = contentObj.text as string ?? JSON.stringify(content);
+          modelText = (contentObj.text as string) ?? JSON.stringify(content);
         }
       } else {
         modelText = JSON.stringify(response);
