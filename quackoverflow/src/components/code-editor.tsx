@@ -53,6 +53,11 @@ export const CodeEditor: React.FC = () => {
         setCode(userCodeData.code);
         lastSavedCodeRef.current = userCodeData.code;
         setIsInitialized(true);
+
+        // Send contextual update after initial code load
+        sendContextualUpdate(
+          `Loaded User Code ${new Date().toLocaleTimeString()}\n ${userCodeData.code}`
+        );
       } else if (
         !hasUnsavedChangesRef.current &&
         userCodeData.code !== lastSavedCodeRef.current
